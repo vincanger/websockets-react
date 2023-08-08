@@ -2,18 +2,6 @@ import cors from 'cors';
 import express from 'express';
 import { Server, Socket } from 'socket.io';
 
-const app = express();
-app.use(cors({ origin: 'http://localhost:5173' }));
-const server = require('http').createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: 'http://localhost:5173',
-    methods: ['GET', 'POST'],
-  },
-});
-
-io.use(addUserToSocketDataIfAuthenticated);
-
 type PollState = {
   question: string;
   options: {
@@ -23,6 +11,35 @@ type PollState = {
     votes: string[];
   }[];
 };
+
+interface ClientToServerEvents {
+  vote: (optionId: number) => void;
+  askForStateUpdate: () => void;
+}
+interface ServerToClientEvents {
+  updateState: (state: PollState) => void;
+}
+interface InterServerEvents { }
+interface SocketData {
+  user: string;
+}
+
+const app = express();
+app.use(cors({ origin: 'http://localhost:5173' }));
+const server = require('http').createServer(app);
+const io = new Server<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
+>(server, {
+  cors: {
+    origin: 'http://localhost:5173',
+    methods: ['GET', 'POST'],
+  },
+});
+
+io.use(addUserToSocketDataIfAuthenticated);
 
 async function addUserToSocketDataIfAuthenticated(socket: Socket, next: (err?: Error) => void) {
   const user = socket.handshake.auth.token;
@@ -62,7 +79,7 @@ app.get('/', (req, res) => {
   res.send(`<h1>Hello World</h1>`);
 });
 
-io.on('connection', (socket: any) => {
+io.on('connection', (socket) => {
   console.log('a user connected', socket.data.user);
 
   socket.on('askForStateUpdate', () => {
