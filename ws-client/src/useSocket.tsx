@@ -1,9 +1,25 @@
 import { useState, useEffect } from 'react';
-import socketIOClient from 'socket.io-client';
+import socketIOClient, { Socket } from 'socket.io-client';
 
-// Usage: const { socket, isConnected } = useSocket('http://localhost:3000');
+export type PollState = {
+  question: string;
+  options: {
+    id: number;
+    text: string;
+    description: string;
+    votes: string[];
+  }[];
+};
+interface ServerToClientEvents {
+  updateState: (state: PollState) => void;
+}
+interface ClientToServerEvents {
+  vote: (optionId: number) => void;
+  askForStateUpdate: () => void;
+}
+
 export function useSocket({endpoint, token } : { endpoint: string, token: string }) {
-  const socket = socketIOClient(endpoint,  {
+  const socket: Socket<ServerToClientEvents, ClientToServerEvents>  = socketIOClient(endpoint,  {
     auth: {
       token: token
     }

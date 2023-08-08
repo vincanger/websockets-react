@@ -2,16 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { Layout } from './Layout';
 import { Button, Card } from 'flowbite-react';
 import { useSocket } from './useSocket';
-
-type PollState = {
-  question: string;
-  options: {
-    id: number;
-    text: string;
-    description: string;
-    votes: string[];
-  }[];
-};
+import type { PollState } from './useSocket';
 
 const App = () => {
   const [poll, setPoll] = useState<PollState | null>(null);
