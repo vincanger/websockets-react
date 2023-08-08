@@ -1,49 +1,48 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Layout } from './Layout';
 import { Button, Card } from 'flowbite-react';
-import { useSocket } from './useSocket';
-
-type PollState = {
-  question: string;
-  options: {
-    id: number;
-    text: string;
-    description: string;
-    votes: string[];
-  }[];
-};
 
 const App = () => {
-  const [poll, setPoll] = useState<PollState | null>(null);
+  const [poll, setPoll] = useState<any | null>({
+    question: "Sup?",
+    options: [
+      {
+        id: 1,
+        text: 'Nothing',
+        description: '🤷',
+        votes: ['User-1', 'User-3'],
+      },
+      {
+        id: 2,
+        text: 'Hanging out',
+        description: '🤙',
+        votes: ['User-2'],
+      },
+    ],
+  });
   
   const randomUser = useMemo(() => {
     const randomName = Math.random().toString(36).substring(7);
     return `User-${randomName}`;
   }, []);
 
-  const { socket, isConnected } = useSocket({ endpoint: `http://localhost:8000`, token: randomUser });
-
   const totalVotes = useMemo(() => {
     return poll?.options.reduce((acc, option) => acc + option.votes.length, 0) ?? 0;
   }, [poll]);
 
-  socket.on('updateState', (newState) => {
-    setPoll(newState);
-  });
-
   useEffect(() => {
-    socket.emit('askForStateUpdate');
+    console.log('poll: ', poll)
   }, []);
 
   function handleVote(optionId: number) {
-    socket.emit('vote', optionId);
+    //
   }
 
   return (
     <Layout user={randomUser}>
       <div className='w-full max-w-2xl mx-auto p-8'>
         <h1 className='text-2xl font-bold'>{poll?.question ?? 'Loading...'}</h1>
-        <h2 className='text-lg italic'>{isConnected ? 'Connected ✅' : 'Disconnected 🛑'}</h2>
+
         {poll && <p className='leading-relaxed text-gray-500'>Cast your vote for one of the options.</p>}
         {poll && (
           <div className='mt-4 flex flex-col gap-4'>
