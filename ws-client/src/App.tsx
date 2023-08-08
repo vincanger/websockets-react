@@ -27,7 +27,7 @@ const App = () => {
     return poll?.options.reduce((acc, option) => acc + option.votes.length, 0) ?? 0;
   }, [poll]);
 
-  socket.on('updateState', (newState) => {
+  socket.on('updateState', (newState: PollState) => {
     setPoll(newState);
   });
 
